@@ -25,6 +25,7 @@ public class GameManager : MonoBehaviour
         magatzems = new List<Build>();
         money = 1000;
     }
+
     public void CreatPlantacionButton()
     {
         Build build = new Build();
