@@ -30,6 +30,15 @@ public class Player_Info : MonoBehaviour
         PrintMoneyText(); 
     }
 
+    public void RemoveMoney(int value)
+    {
+        if (current_money >= value)
+        {
+            current_money -= value;
+            PrintMoneyText();
+        }
+    }
+
     void PrintMoneyText()
     {
         money_text.text = current_money.ToString("C0");

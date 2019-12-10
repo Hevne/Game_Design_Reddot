@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class Panel_Manager : MonoBehaviour
 {
@@ -22,6 +23,10 @@ public class Panel_Manager : MonoBehaviour
     public Buildings GangHCQ_Building;
     public Buildings Operations_Center_Building;
     public Buildings Money_Laundering_Building;
+
+    [Header("Units")]
+    public Unit[] units;
+    public TextMeshProUGUI moneyText;
 
 
     void Start()
@@ -155,6 +160,16 @@ public class Panel_Manager : MonoBehaviour
         }
 
 
+    }
+
+    public void UpdateUnits()
+    {
+        for (int i = 0; i < units.Length; i++)
+        {
+            units[i].UpdateStats();
+        }
+
+        moneyText.text = info.current_money.ToString("C0");
     }
 
 }
