@@ -61,7 +61,7 @@ public class Buildings
         }
     }
 
-    public int WarehouseMoneyCleaning(int increment)
+    public int WarehouseMoneyCleaning(int increment, int lvl)
     {
         int inc = 0;
         int valueToUse = 0;
@@ -77,7 +77,7 @@ public class Buildings
             currentValue = 0;
         }
 
-        switch (level)
+        switch (lvl)
         {
             case 0:
                 inc = valueToUse * 20;
@@ -85,7 +85,7 @@ public class Buildings
 
             case 1:
                 inc = valueToUse * 30;
-                break;
+                break;  
         }
         return inc;
 

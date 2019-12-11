@@ -33,6 +33,7 @@ public class Panel_Manager : MonoBehaviour
 
     [Header("AvailablePlants")]
     public GameObject[] plantsToUpgrade;
+    public GameObject[] wareHouseToUpgrade;
 
 
     void Start()
@@ -65,6 +66,16 @@ public class Panel_Manager : MonoBehaviour
         {
             TextMeshProUGUI text = plants[i].GetComponentInChildren<TextMeshProUGUI>();
             text.text = "Lvl " + Plants_Building[i].level + ":";
+
+        }
+    }  
+    
+    private void UpdateWareHouseUI()
+    {
+        for (int i = 0; i < wareHouses.Length; i++)
+        {
+            TextMeshProUGUI text = wareHouses[i].GetComponentInChildren<TextMeshProUGUI>();
+            text.text = "Lvl " + WareHouse_Building[i].level + ":";
 
         }
     }
@@ -101,7 +112,7 @@ public class Panel_Manager : MonoBehaviour
             {
                 if (WareHouse_Building[i].unLocked)
                 {
-                    info.AddMoney(WareHouse_Building[i].WarehouseMoneyCleaning(result));
+                    info.AddMoney(WareHouse_Building[i].WarehouseMoneyCleaning(result,(int)Money_Laundering_Building.level));
                 }
             }
             info.UpdateWareHouseUI();
@@ -122,6 +133,10 @@ public class Panel_Manager : MonoBehaviour
         if (WareHouse_Building[position].currentValue + 10 <= WareHouse_Building[position].maxCapacity && WareHouse_Building[position].unLocked)
         {
             WareHouse_Building[position].currentValue += 10;
+        }
+        else if(WareHouse_Building[position].currentValue + 10 >= WareHouse_Building[position].maxCapacity && WareHouse_Building[position].unLocked)
+        {
+            WareHouse_Building[position].currentValue = (int)WareHouse_Building[position].maxCapacity;
         }
         info.UpdateWareHouseUI();
     }
@@ -200,7 +215,7 @@ public class Panel_Manager : MonoBehaviour
         info.PrintMoneyText();
     }
 
-    public void AddPlant()
+    public void AddPlant(Button button)
     {
         for (int i = 0; i < plants.Length; i++)
         {
@@ -212,6 +227,12 @@ public class Panel_Manager : MonoBehaviour
 
                 break;
             }
+
+        }
+
+        if (plants[plants.Length -1].activeInHierarchy)
+        {
+            button.interactable = false;
         }
     }
 
@@ -240,6 +261,24 @@ public class Panel_Manager : MonoBehaviour
                 plantsToUpgrade[i].SetActive(false);
             }
         }
+    }   
+    
+    public void OpenUpgradeWareHouseScreen()
+    {
+        for (int i = 0; i < wareHouses.Length; i++)
+        {
+            if (wareHouses[i].activeInHierarchy)
+            {
+                wareHouseToUpgrade[i].SetActive(true);
+                TextMeshProUGUI text = wareHouseToUpgrade[i].GetComponentInChildren<TextMeshProUGUI>();
+                text.text = "WH" + (i + 1) + ": Lvl " + WareHouse_Building[i].level;
+
+            }
+            else
+            {
+                wareHouseToUpgrade[i].SetActive(false);
+            }
+        }
     }
 
     public void UpgradePlant(int num)
@@ -248,7 +287,8 @@ public class Panel_Manager : MonoBehaviour
         {
             info.current_money -= Plants_Building[num].upgradePriceLevel1;
             Plants_Building[num].level++;
-        } else if (Plants_Building[num].level == 1 && info.current_money >= Plants_Building[num].upgradePriceLevel2)
+        } 
+        else if (Plants_Building[num].level == 1 && info.current_money >= Plants_Building[num].upgradePriceLevel2)
         {
             info.current_money -= Plants_Building[num].upgradePriceLevel2;
             Plants_Building[num].level++;
@@ -265,13 +305,35 @@ public class Panel_Manager : MonoBehaviour
         UpdatePlantsUI();
     }
 
-    public void BuyWareHouse()
+    public void UpgradeWareHouse(int num)
+    {
+        if(WareHouse_Building[num].level == 0 && info.current_money >= WareHouse_Building[num].upgradePriceLevel1)
+        {
+            info.current_money -= WareHouse_Building[num].upgradePriceLevel1;
+            WareHouse_Building[num].level++;
+            WareHouse_Building[num].maxCapacity = 150;
+            info.UpdateWareHouseUI();
+        }
+        else if(WareHouse_Building[num].level == 1 && info.current_money >= WareHouse_Building[num].upgradePriceLevel2)
+        {
+            info.current_money -= WareHouse_Building[num].upgradePriceLevel2;
+            WareHouse_Building[num].level++;
+            WareHouse_Building[num].maxCapacity = 250;
+            info.UpdateWareHouseUI();
+        }
+        info.PrintMoneyText();
+        OpenUpgradeWareHouseScreen();
+        UpdateWareHouseUI();
+    }
+
+    public void BuyWareHouse(Button button)
     {
         if (info.current_money >= WareHouse_Building[1].buyPrice)
         {
             wareHouses[1].SetActive(true);
             info.current_money -= WareHouse_Building[1].buyPrice;
             info.PrintMoneyText();
+            button.interactable = false;
         }
     }
 
@@ -304,5 +366,84 @@ public class Panel_Manager : MonoBehaviour
         Plants_Building[num].unLocked = true;
 
     } 
+
+
+    public void BuyOperationCenter(Button button)
+    {
+        if(info.current_money >= Operations_Center_Building.buyPrice)
+        {
+            info.current_money -= Operations_Center_Building.buyPrice;
+            info.PrintMoneyText();
+            units[2].defence++;
+            button.interactable = false;
+            Operations_Center_Building.unLocked = true;
+        }
+    }
+    public void ActiveButton(Button button)
+    {
+
+        button.interactable = true;
+    }
+
+    public void BuyWeaponWorkshop(Button button)
+    {
+        if(info.current_money >= Workshop_Building.buyPrice)
+        {
+            info.current_money -= Workshop_Building.buyPrice;
+            info.PrintMoneyText();
+            units[0].maxUnits++;
+            button.interactable = false;
+            Workshop_Building.unLocked = true;
+        }
+    }
+
+    public void UpgradeWorkShop(Button button)
+    {
+        if(Workshop_Building.level == 0 && info.current_money >= Workshop_Building.upgradePriceLevel1)
+        {
+            info.current_money -= Workshop_Building.upgradePriceLevel1;
+            Workshop_Building.level++;
+            units[0].attack++;
+            info.PrintMoneyText();
+        }
+        else if(Workshop_Building.level == 1 && info.current_money >= Workshop_Building.upgradePriceLevel2)
+        {
+            info.current_money -= Workshop_Building.upgradePriceLevel2;
+            info.PrintMoneyText();
+            units[0].movement++;
+            Workshop_Building.level++;
+            button.interactable = false;
+        }
+    }  
+    
+    public void UpgradeOperationCenter(Button button)
+    {
+        if(Operations_Center_Building.level == 0 && info.current_money >= Operations_Center_Building.upgradePriceLevel1)
+        {
+            info.current_money -= Operations_Center_Building.upgradePriceLevel1;
+            Operations_Center_Building.level++;
+            units[2].movement++;
+            info.PrintMoneyText();
+        }
+        else if(Operations_Center_Building.level == 1 && info.current_money >= Operations_Center_Building.upgradePriceLevel2)
+        {
+            info.current_money -= Operations_Center_Building.upgradePriceLevel2;
+            Operations_Center_Building.level++;
+            info.PrintMoneyText();
+            button.interactable = false;
+        }
+    }
+    
+    public void UpgradeMoneyLaundering(Button button)
+    {
+        if(Money_Laundering_Building.level == 0 && info.current_money >= Money_Laundering_Building.upgradePriceLevel1)
+        {
+            info.current_money -= Money_Laundering_Building.upgradePriceLevel1;
+            Money_Laundering_Building.level++;
+            info.PrintMoneyText();
+            button.interactable = false;
+        }
+
+    }
     
 }
