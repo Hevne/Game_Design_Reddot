@@ -39,7 +39,7 @@ public class Player_Info : MonoBehaviour
         }
     }
 
-    void PrintMoneyText()
+    public void PrintMoneyText()
     {
         money_text.text = current_money.ToString("C0");
     }
@@ -59,6 +59,8 @@ public class Player_Info : MonoBehaviour
             slider_text.text = crb.currentValue + " / " + crb.maxCapacity;
             i++;
         }
+
+        
     }
 
     public void UpdateWareHouseUI()

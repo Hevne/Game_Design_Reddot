@@ -23,10 +23,16 @@ public class Panel_Manager : MonoBehaviour
     public Buildings GangHCQ_Building;
     public Buildings Operations_Center_Building;
     public Buildings Money_Laundering_Building;
+    public GameObject[] plants;
+    public GameObject[] wareHouses;
 
     [Header("Units")]
     public Unit[] units;
     public TextMeshProUGUI moneyText;
+
+
+    [Header("AvailablePlants")]
+    public GameObject[] plantsToUpgrade;
 
 
     void Start()
@@ -34,6 +40,32 @@ public class Panel_Manager : MonoBehaviour
         for (int i = 1; i < panel_array.Length; i++)
         {
             panel_array[i].SetActive(false);
+        }
+
+        for (int i = 0; i < plants.Length; i++)
+        {
+            TextMeshProUGUI text = plants[i].GetComponentInChildren<TextMeshProUGUI>();
+            text.text = "Lvl " + Plants_Building[i].level + ":";
+
+            plants[i].SetActive(false);
+        }
+
+        for (int i = 0; i < wareHouses.Length; i++)
+        {
+            TextMeshProUGUI text = wareHouses[i].GetComponentInChildren<TextMeshProUGUI>();
+            text.text = "Lvl " + WareHouse_Building[i].level + ":";
+
+            plants[i].SetActive(false);
+        }
+    }
+
+    private void UpdatePlantsUI()
+    {
+        for (int i = 0; i < plants.Length; i++)
+        {
+            TextMeshProUGUI text = plants[i].GetComponentInChildren<TextMeshProUGUI>();
+            text.text = "Lvl " + Plants_Building[i].level + ":";
+
         }
     }
 
@@ -45,7 +77,6 @@ public class Panel_Manager : MonoBehaviour
     public void ChangeScreen(int selector)
     {
 
-        panel_array[currentScreen].SetActive(false);
         panel_array[selector].SetActive(true);
         currentScreen = selector;
     }
@@ -57,7 +88,7 @@ public class Panel_Manager : MonoBehaviour
             //Produce plants
             for (int i = 0; i < Plants_Building.Length; i++)
             {
-                if (Plants_Building[i].unLocked)
+                if (plants[i].activeInHierarchy && Plants_Building[i].unLocked)
                     Plants_Building[i].IncreaseValuePlant((uint)result);
             }
             info.UpdatePlantsUI();
@@ -80,7 +111,7 @@ public class Panel_Manager : MonoBehaviour
 
     public void Remove10Units(int position)
     {
-        if(Plants_Building[position].currentValue - 10 >= 0 && Plants_Building[position].unLocked)
+        if (Plants_Building[position].currentValue - 10 >= 0)
         {
             Plants_Building[position].currentValue -= 10;
             info.UpdatePlantsUI();
@@ -91,10 +122,6 @@ public class Panel_Manager : MonoBehaviour
         if (WareHouse_Building[position].currentValue + 10 <= WareHouse_Building[position].maxCapacity && WareHouse_Building[position].unLocked)
         {
             WareHouse_Building[position].currentValue += 10;
-        }
-        else
-        {
-            WareHouse_Building[position].currentValue = (int)WareHouse_Building[position].maxCapacity;
         }
         info.UpdateWareHouseUI();
     }
@@ -150,7 +177,7 @@ public class Panel_Manager : MonoBehaviour
 
         }
 
-        if(buy == true)
+        if (buy == true)
         {
             //Buy
         }
@@ -170,6 +197,112 @@ public class Panel_Manager : MonoBehaviour
         }
 
         moneyText.text = info.current_money.ToString("C0");
+        info.PrintMoneyText();
     }
 
+    public void AddPlant()
+    {
+        for (int i = 0; i < plants.Length; i++)
+        {
+            if (!plants[i].activeInHierarchy && info.current_money >= Plants_Building[i].buyPrice)
+            {
+                info.current_money -= Plants_Building[i].buyPrice;
+                info.PrintMoneyText();
+                plants[i].SetActive(true);
+
+                break;
+            }
+        }
+    }
+
+    public void OpenUpgradeScreen()
+    {
+        for (int i = 0; i < plants.Length; i++)
+        {
+            if (plants[i].activeInHierarchy)
+            {
+                plantsToUpgrade[i].SetActive(true);
+                TextMeshProUGUI text = plantsToUpgrade[i].GetComponentInChildren<TextMeshProUGUI>();
+                int price;
+                if (Plants_Building[i].level == 0)
+                {
+                    price = Plants_Building[i].upgradePriceLevel1;
+                }
+                else
+                {
+                    price = Plants_Building[i].upgradePriceLevel2;
+                }
+                text.text = "Plant " + (i + 1) + ": Lvl " + Plants_Building[i].level + " (" + price + "€)";
+
+            }
+            else
+            {
+                plantsToUpgrade[i].SetActive(false);
+            }
+        }
+    }
+
+    public void UpgradePlant(int num)
+    {
+        if (Plants_Building[num].level == 0 && info.current_money >= Plants_Building[num].upgradePriceLevel1)
+        {
+            info.current_money -= Plants_Building[num].upgradePriceLevel1;
+            Plants_Building[num].level++;
+        } else if (Plants_Building[num].level == 1 && info.current_money >= Plants_Building[num].upgradePriceLevel2)
+        {
+            info.current_money -= Plants_Building[num].upgradePriceLevel2;
+            Plants_Building[num].level++;
+        }
+
+        if (Plants_Building[num].level == 2)
+        {
+            Plants_Building[num].maxCapacity = 100;
+            info.plant_sliders[num].maxValue = Plants_Building[num].maxCapacity;
+            info.UpdatePlantsUI();
+        }
+        info.PrintMoneyText();
+        OpenUpgradeScreen();
+        UpdatePlantsUI();
+    }
+
+    public void BuyWareHouse()
+    {
+        if (info.current_money >= WareHouse_Building[1].buyPrice)
+        {
+            wareHouses[1].SetActive(true);
+            info.current_money -= WareHouse_Building[1].buyPrice;
+            info.PrintMoneyText();
+        }
+    }
+
+
+    public void Repair_DestroyPlant(int num)
+    {
+
+    }
+    public void DestroyPlant(int num)
+    {
+        Plants_Building[num].unLocked = false;
+        Plants_Building[num].currentValue = 0;
+        info.UpdatePlantsUI();
+    }   
+       
+    public void DestroyWareHouse(int num)
+    {
+        WareHouse_Building[num].unLocked = false;
+        WareHouse_Building[num].currentValue = 0;
+        info.UpdateWareHouseUI();
+    }   
+
+    public void RepairWarehouse(int num)
+    {
+        WareHouse_Building[num].unLocked = true;
+    } 
+
+    public void RepairPlant(int num)
+    {
+        Plants_Building[num].unLocked = true;
+
+    } 
+    
 }

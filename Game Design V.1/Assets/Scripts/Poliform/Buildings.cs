@@ -24,6 +24,9 @@ public class Buildings
     public uint maxLevel;
     public uint maxCapacity;
     public int currentValue;
+    public int buyPrice;
+    public int upgradePriceLevel1;
+    public int upgradePriceLevel2;
 
     public bool unLocked = false;
 
